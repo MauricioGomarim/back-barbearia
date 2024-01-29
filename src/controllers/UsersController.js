@@ -7,10 +7,10 @@ class UsersController {
     const { name, email, telefone, password } = request.body;
 
 
-    const checkUserExists = await knex("users").where({ telefone }).first();
+    const checkUserExists = await knex("users").where({ email }).first();
 
     if (checkUserExists) {
-      throw new AppError("Erro: Este telefone já está em uso!");
+      throw new AppError("Erro: Este email já está em uso!");
     }
 
     if (!email.includes("@", ".") || !email.includes(".")) {
