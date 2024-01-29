@@ -6,7 +6,7 @@ class UsersController {
   async create(request, response) {
     const { name, email, telefone, password } = request.body;
 
-
+    console.log("criou")
     const checkUserExists = await knex("users").where({ email }).first();
 
     if (checkUserExists) {
@@ -31,7 +31,7 @@ class UsersController {
   }
 
   async update(request, response) {
-    const { name, email, telefone, password, old_password } = request.body;
+    const { email, telefone, password, old_password } = request.body;
     const user_id = request.user.id;
     
     const user = await knex("users").where({ id: user_id }).first();
@@ -53,7 +53,6 @@ class UsersController {
         throw new AppError("Erro: Digite um email válido!");
       }
 
-    user.name = name;
     user.email = email;
     user.telefone = telefone;
 
@@ -78,6 +77,23 @@ class UsersController {
 
     return response.status(201).json();
   }
+
+  async show(request, response) {
+    // Pegando o id
+
+    const user_id = request.user.id;
+   
+
+    const user = await knex("users").where({ id: user_id }).first();
+    return response.status(201).json(user);
+  }
+
+  async index(request, response) {
+
+    const user = await knex("users");
+    return response.status(201).json(user);
+  }
+
 }
 
 
