@@ -6,7 +6,6 @@ class UsersController {
   async create(request, response) {
     const { name, email, telefone, password } = request.body;
 
-    console.log("criou")
     const checkUserExists = await knex("users").where({ email }).first();
 
     if (checkUserExists) {
