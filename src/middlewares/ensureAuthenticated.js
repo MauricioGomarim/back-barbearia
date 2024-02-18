@@ -1,4 +1,4 @@
-const { verify } = require("jsonwebtoken");
+const { verify, TokenExpiredError  } = require("jsonwebtoken");
 const AppError = require("../utils/AppError");
 const authConfig = require("../configs/auth");
 const knex = require("../database/knex");
@@ -11,18 +11,16 @@ const knex = require("../database/knex");
   }
 
   const [, token] = authHeader.split(" ");
-  const { sub: user_id } = verify(token, authConfig.jwt.secret);
 
 
   try {
     const { sub: user_id } = verify(token, authConfig.jwt.secret);
-
     request.user = {
       id: Number(user_id),
     };
 
     return next();
-  } catch {
+  } catch (error){
     throw new AppError("JWT Token inválido", 401);
   }
 }

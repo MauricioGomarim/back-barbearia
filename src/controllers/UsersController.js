@@ -30,8 +30,10 @@ class UsersController {
   }
 
   async update(request, response) {
-    const { email, telefone, password, old_password } = request.body;
+    const { name, telefone, email,  password, old_password, insta, face, descricao } = request.body;
+  
     const user_id = request.user.id;
+    
     
     const user = await knex("users").where({ id: user_id }).first();
 
@@ -52,8 +54,13 @@ class UsersController {
         throw new AppError("Erro: Digite um email válido!");
       }
 
-    user.email = email;
+    user.name = name;
     user.telefone = telefone;
+    user.email = email;
+    user.insta = insta;
+    user.face = face;
+    user.descricao = descricao;
+
 
     if (password && !old_password) {
       throw new AppError(
@@ -72,17 +79,15 @@ class UsersController {
     }
 
     // Inserindo dados no banco
-    await knex("users").where({ id: user_id }).update({name: user.name, email: user.email, telefone: user.telefone, password: user.password})
+    await knex("users").where({ id: user_id }).update({name: user.name, email: user.email, telefone: user.telefone, password: user.password, insta: user.insta, face: user.face, descricao: user.descricao})
 
     return response.status(201).json();
   }
 
   async show(request, response) {
     // Pegando o id
-
     const user_id = request.user.id;
-   
-
+  
     const user = await knex("users").where({ id: user_id }).first();
     return response.status(201).json(user);
   }

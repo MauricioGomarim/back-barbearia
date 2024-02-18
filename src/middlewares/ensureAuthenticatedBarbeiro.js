@@ -10,13 +10,15 @@ async function ensureAuthenticatedBarbeiro(request, response, next) {
     const authHeader = request.headers.authorization;
   
     const [, token] = authHeader.split(" ");
+    
     const { sub: user_id } = verify(token, authConfig.jwt.secret);
-  
+
   
     const checkUserExists = await knex("users")
     .where({ id: user_id })
     .first();
   
+    
     if(checkUserExists.isBarbeiro){
         return next();
     } else {

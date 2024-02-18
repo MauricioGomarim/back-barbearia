@@ -9,7 +9,15 @@ const servicesController = new ServicesController();
 
 const servicesRoutes = Router();
 
-servicesRoutes.post('/:user_id', ensureAuthenticated, ensureAuthenticatedBarbeiro, servicesController.create);
+servicesRoutes.post('/', ensureAuthenticatedBarbeiro, servicesController.create);
+servicesRoutes.get('/', servicesController.index);
+servicesRoutes.get('/:id', servicesController.show);
+servicesRoutes.put('/:id', ensureAuthenticatedBarbeiro, servicesController.update);
+servicesRoutes.delete('/:id', ensureAuthenticatedBarbeiro, servicesController.delete);
+
+
+
+
 
 
 module.exports = servicesRoutes;
