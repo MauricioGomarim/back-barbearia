@@ -11,7 +11,7 @@ class ServicesController {
 
     try {
       await knex("servicos").insert({
-        user_id,
+        barbeiro_id: user_id,
         title,
         stars,
         duracao,
@@ -59,7 +59,7 @@ class ServicesController {
     }
 
     if(id) {
-      services = await knex("servicos").where("user_id", id).orderBy("created_at", "desc");
+      services = await knex("servicos").where("barbeiro_id", id).orderBy("created_at", "desc");
     }
 
     return response.status(201).json(services);

@@ -5,30 +5,20 @@ const { hash, compare } = require("bcryptjs");
 class ReservasController {
   async create(request, response) {
 
-    console.log('bateu')
-    // const { name, email, telefone, password } = request.body;
+    const { user_id, id_barbeiro_select, id_services, data_hora_reserva} = request.body;
 
-    // const checkUserExists = await knex("users").where({ email }).first();
+    const id_services_json = JSON.stringify(id_services)
 
-    // if (checkUserExists) {
-    //   throw new AppError("Erro: Este email já está em uso!");
-    // }
+    console.log(user_id, id_barbeiro_select, id_services_json, data_hora_reserva)
 
-    // if (!email.includes("@", ".") || !email.includes(".")) {
-    //   throw new AppError("Erro: Digite um email válido!");
-    // }
+    await knex("reservas").insert({
+      user_id,
+      id_barbeiro_select,
+      id_services: id_services_json,
+      data_hora_reserva,
+    });
 
-    // // Criptografando a senha
-    // const hashedPassword = await hash(password, 8);
 
-    // await knex("users").insert({
-    //   name,
-    //   email,
-    //   telefone,
-    //   password: hashedPassword,
-    // });
-
-    // return response.status(201).json({name, email, telefone, password});
 
     return response.status(201).json();
   }
@@ -96,10 +86,19 @@ class ReservasController {
     return response.status(201).json(user);
   }
 
+  async showFilter(request, response) {
+    // Pegando o id
+    const {mes, dia} = request.query;
+
+
+    const reserva = await knex("reservas").whereLike('data_hora_reserva', `%${dia}/${mes}%`);
+    return response.status(201).json(reserva);
+  }
+
   async index(request, response) {
 
-    const user = await knex("users");
-    return response.status(201).json(user);
+    const reservas = await knex("reservas");
+    return response.status(201).json(reservas);
   }
 
 }

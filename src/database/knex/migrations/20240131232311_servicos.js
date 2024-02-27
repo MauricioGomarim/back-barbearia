@@ -1,6 +1,6 @@
 exports.up = knex => knex.schema.createTable("servicos", table => {
     table.increments("id");
-    table.integer("user_id").references("id").inTable("users").onDelete('CASCADE');
+    table.integer("barbeiro_id").references("id").inTable("users").onDelete('CASCADE');
     table.text("title");
     table.text("stars");
     table.text("duracao");

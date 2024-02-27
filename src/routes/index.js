@@ -14,7 +14,7 @@ const routes = Router();
 routes.use("/users", usersRouter);
 routes.use("/sessions", sessionsRoutes);
 routes.use("/services", servicesRoutes);
-routes.use("/checkout-reserva", reservasRoutes);
+routes.use("/reserva", reservasRoutes);
 
 
 
