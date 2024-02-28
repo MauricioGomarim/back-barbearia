@@ -5,17 +5,23 @@ const { hash, compare } = require("bcryptjs");
 class ReservasController {
   async create(request, response) {
 
-    const { user_id, id_barbeiro_select, id_services, data_hora_reserva} = request.body;
+    const { user_id, id_barbeiro_select, id_services, dia_reserva, mes_reserva, hora_reserva} = request.body;
+    const reserva = await knex("reservas").where({dia_reserva}).where({mes_reserva}).where({hora_reserva}).first()
 
+    if(reserva) {
+      throw new AppError("Já existe uma reserva nessa data...")
+    }
     const id_services_json = JSON.stringify(id_services)
 
-    console.log(user_id, id_barbeiro_select, id_services_json, data_hora_reserva)
 
     await knex("reservas").insert({
       user_id,
       id_barbeiro_select,
       id_services: id_services_json,
-      data_hora_reserva,
+      dia_reserva,
+      mes_reserva,
+      hora_reserva
+
     });
 
 
@@ -91,7 +97,7 @@ class ReservasController {
     const {mes, dia} = request.query;
 
 
-    const reserva = await knex("reservas").whereLike('data_hora_reserva', `%${dia}/${mes}%`);
+    const reserva = await knex("reservas").where('dia_reserva', `${dia}`).where('mes_reserva', `${mes}`);
     return response.status(201).json(reserva);
   }
 
