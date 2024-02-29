@@ -1,18 +1,49 @@
 const AppError = require("../utils/AppError");
 const knex = require("../database/knex");
 const { hash, compare } = require("bcryptjs");
+const { Client, LocalAuth } = require("whatsapp-web.js");
 
 class ReservasController {
   async create(request, response) {
+    const {
+      user_id,
+      id_barbeiro_select,
+      id_services,
+      dia_reserva,
+      mes_reserva,
+      hora_reserva,
+    } = request.body;
+    const reserva = await knex("reservas")
+      .where({ dia_reserva })
+      .where({ mes_reserva })
+      .where({ hora_reserva })
+      .first();
 
-    const { user_id, id_barbeiro_select, id_services, dia_reserva, mes_reserva, hora_reserva} = request.body;
-    const reserva = await knex("reservas").where({dia_reserva}).where({mes_reserva}).where({hora_reserva}).first()
-
-    if(reserva) {
-      throw new AppError("Já existe uma reserva nessa data...")
+    if (reserva) {
+      throw new AppError("Já existe uma reserva nessa data...");
     }
-    const id_services_json = JSON.stringify(id_services)
+    const id_services_json = JSON.stringify(id_services);
 
+    const client = new Client({
+      authStrategy: new LocalAuth({
+        dataPath: "../sessao-wpp/session",
+      }),
+    });
+
+  
+    client.on('ready', () => {
+      console.log("Client is ready!");
+      const numeroFormatado = '5517991799397' + "@c.us";
+      client.sendMessage(numeroFormatado, 'Olá, essa é uma mensagem de teste.')
+        .then((response) => {
+          console.log("Mensagem enviada com sucesso!");
+        })
+        .catch((error) => {
+          console.error("Erro ao enviar mensagem:", error);
+        });
+    });
+
+    client.initialize();
 
     await knex("reservas").insert({
       user_id,
@@ -20,21 +51,26 @@ class ReservasController {
       id_services: id_services_json,
       dia_reserva,
       mes_reserva,
-      hora_reserva
-
+      hora_reserva,
     });
-
-
 
     return response.status(201).json();
   }
 
   async update(request, response) {
-    const { name, telefone, email,  password, old_password, insta, face, descricao } = request.body;
-  
+    const {
+      name,
+      telefone,
+      email,
+      password,
+      old_password,
+      insta,
+      face,
+      descricao,
+    } = request.body;
+
     const user_id = request.user.id;
-    
-    
+
     const user = await knex("users").where({ id: user_id }).first();
 
     if (!user) {
@@ -43,16 +79,13 @@ class ReservasController {
 
     const userWithUpdatedEmail = await knex("users").where({ email }).first();
 
-
-
     if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) {
       throw new AppError("Este e-mail já está em uso.");
     }
 
-
     if (!email.includes("@", ".") || !email.includes(".")) {
-        throw new AppError("Erro: Digite um email válido!");
-      }
+      throw new AppError("Erro: Digite um email válido!");
+    }
 
     user.name = name;
     user.telefone = telefone;
@@ -60,7 +93,6 @@ class ReservasController {
     user.insta = insta;
     user.face = face;
     user.descricao = descricao;
-
 
     if (password && !old_password) {
       throw new AppError(
@@ -79,7 +111,17 @@ class ReservasController {
     }
 
     // Inserindo dados no banco
-    await knex("users").where({ id: user_id }).update({name: user.name, email: user.email, telefone: user.telefone, password: user.password, insta: user.insta, face: user.face, descricao: user.descricao})
+    await knex("users")
+      .where({ id: user_id })
+      .update({
+        name: user.name,
+        email: user.email,
+        telefone: user.telefone,
+        password: user.password,
+        insta: user.insta,
+        face: user.face,
+        descricao: user.descricao,
+      });
 
     return response.status(201).json();
   }
@@ -87,27 +129,25 @@ class ReservasController {
   async show(request, response) {
     // Pegando o id
     const user_id = request.user.id;
-  
+
     const user = await knex("users").where({ id: user_id }).first();
     return response.status(201).json(user);
   }
 
   async showFilter(request, response) {
     // Pegando o id
-    const {mes, dia} = request.query;
+    const { mes, dia } = request.query;
 
-
-    const reserva = await knex("reservas").where('dia_reserva', `${dia}`).where('mes_reserva', `${mes}`);
+    const reserva = await knex("reservas")
+      .where("dia_reserva", `${dia}`)
+      .where("mes_reserva", `${mes}`);
     return response.status(201).json(reserva);
   }
 
   async index(request, response) {
-
     const reservas = await knex("reservas");
     return response.status(201).json(reservas);
   }
-
 }
-
 
 module.exports = ReservasController;
