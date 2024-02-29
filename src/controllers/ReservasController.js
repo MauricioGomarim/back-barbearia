@@ -3,8 +3,13 @@ const knex = require("../database/knex");
 const { hash, compare } = require("bcryptjs");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 
+const client = new Client({
+  authStrategy: new LocalAuth({
+    dataPath: "./sessao-wpp/session",
+  }),
+});
 class ReservasController {
-  async create(request, response) {
+  async create(request, response, client) {
     const {
       user_id,
       id_barbeiro_select,
@@ -13,6 +18,7 @@ class ReservasController {
       mes_reserva,
       hora_reserva,
     } = request.body;
+
     const reserva = await knex("reservas")
       .where({ dia_reserva })
       .where({ mes_reserva })
@@ -23,12 +29,6 @@ class ReservasController {
       throw new AppError("Já existe uma reserva nessa data...");
     }
     const id_services_json = JSON.stringify(id_services);
-
-    const client = new Client({
-      authStrategy: new LocalAuth({
-        dataPath: "../sessao-wpp/session",
-      }),
-    });
 
   
     client.on('ready', () => {
@@ -42,7 +42,7 @@ class ReservasController {
           console.error("Erro ao enviar mensagem:", error);
         });
     });
-
+  
     client.initialize();
 
     await knex("reservas").insert({
