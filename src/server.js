@@ -27,9 +27,6 @@ client.on("ready", () => {
   console.log("Client is ready!");
 });
 
-
-
-
 client.on("authenticated", (session) => {
   console.log("Autenticado com sucesso!");
 });
@@ -41,7 +38,7 @@ client.on("message", async (message) => {
 });
 
 function enviarMensagem(numero, mensagem) {
-    const numeroFormatado = numero + "@c.us";
+  const numeroFormatado = numero + "@c.us";
   client
     .sendMessage(numeroFormatado, mensagem)
     .then((response) => {
@@ -77,6 +74,4 @@ const PORT = process.env.PORT || 3333;
 app.listen(PORT, () => console.log(`Server is running on Port ${PORT}`));
 
 
-module.exports = {
-  client: client
-};
+module.exports = { client, enviarMensagem };

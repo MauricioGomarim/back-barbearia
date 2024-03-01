@@ -3,13 +3,10 @@ const knex = require("../database/knex");
 const { hash, compare } = require("bcryptjs");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 
-const client = new Client({
-  authStrategy: new LocalAuth({
-    dataPath: "./sessao-wpp/session",
-  }),
-});
+const { enviarMensagem, client } = require("../server.js");
+
 class ReservasController {
-  async create(request, response, client) {
+  async create(request, response) {
     const {
       user_id,
       id_barbeiro_select,
@@ -30,19 +27,11 @@ class ReservasController {
     }
     const id_services_json = JSON.stringify(id_services);
 
-  
-    client.on('ready', () => {
-      console.log("Client is ready!");
-      const numeroFormatado = '5517991799397' + "@c.us";
-      client.sendMessage(numeroFormatado, 'Olá, essa é uma mensagem de teste.')
-        .then((response) => {
-          console.log("Mensagem enviada com sucesso!");
-        })
-        .catch((error) => {
-          console.error("Erro ao enviar mensagem:", error);
-        });
+    client.on("ready", () => {
+      // enviarMensagem("5516992503607", "mensagem teste");
+      console.log('teste')
     });
-  
+
     client.initialize();
 
     await knex("reservas").insert({
@@ -111,17 +100,15 @@ class ReservasController {
     }
 
     // Inserindo dados no banco
-    await knex("users")
-      .where({ id: user_id })
-      .update({
-        name: user.name,
-        email: user.email,
-        telefone: user.telefone,
-        password: user.password,
-        insta: user.insta,
-        face: user.face,
-        descricao: user.descricao,
-      });
+    await knex("users").where({ id: user_id }).update({
+      name: user.name,
+      email: user.email,
+      telefone: user.telefone,
+      password: user.password,
+      insta: user.insta,
+      face: user.face,
+      descricao: user.descricao,
+    });
 
     return response.status(201).json();
   }
