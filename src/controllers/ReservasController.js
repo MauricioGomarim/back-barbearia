@@ -1,11 +1,10 @@
 const AppError = require("../utils/AppError");
 const knex = require("../database/knex");
 const { hash, compare } = require("bcryptjs");
-const { Client, LocalAuth } = require("whatsapp-web.js");
 
-const { enviarMensagem, client } = require("../server.js");
 
 class ReservasController {
+  
   async create(request, response) {
     const {
       user_id,
@@ -27,12 +26,14 @@ class ReservasController {
     }
     const id_services_json = JSON.stringify(id_services);
 
-    client.on("ready", () => {
-      // enviarMensagem("5516992503607", "mensagem teste");
-      console.log('teste')
-    });
+    const { whatsapp } = request;
 
-    client.initialize();
+    try {
+      whatsapp.sendMessage("5568992581641" + "@c.us", "mensagem teste");
+    } catch (error) {
+      console.log('error: ', error);
+    }
+    
 
     await knex("reservas").insert({
       user_id,
