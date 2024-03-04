@@ -13,6 +13,7 @@ class ReservasController {
       dia_reserva,
       mes_reserva,
       hora_reserva,
+      ano_reserva
     } = request.body;
 
     const reserva = await knex("reservas")
@@ -42,6 +43,7 @@ class ReservasController {
       dia_reserva,
       mes_reserva,
       hora_reserva,
+      ano_reserva,
     });
 
     return response.status(201).json();
@@ -124,11 +126,13 @@ class ReservasController {
 
   async showFilter(request, response) {
     // Pegando o id
-    const { mes, dia } = request.query;
+    const { mes, dia, ano } = request.query;
 
     const reserva = await knex("reservas")
       .where("dia_reserva", `${dia}`)
-      .where("mes_reserva", `${mes}`);
+      .where("mes_reserva", `${mes}`)
+      .where("ano_reserva", `${ano}`);
+
     return response.status(201).json(reserva);
   }
 
