@@ -13,7 +13,8 @@ class ReservasController {
       dia_reserva,
       mes_reserva,
       hora_reserva,
-      ano_reserva
+      ano_reserva,
+      valor
     } = request.body;
 
     const reserva = await knex("reservas")
@@ -44,7 +45,10 @@ class ReservasController {
       mes_reserva,
       hora_reserva,
       ano_reserva,
+      status: 'Pendente',
+      valor
     });
+
 
     return response.status(201).json();
   }
@@ -120,8 +124,8 @@ class ReservasController {
     // Pegando o id
     const user_id = request.user.id;
 
-    const user = await knex("users").where({ id: user_id }).first();
-    return response.status(201).json(user);
+    const reservas = await knex("reservas").where({ user_id });
+    return response.status(201).json(reservas);
   }
 
   async showFilter(request, response) {

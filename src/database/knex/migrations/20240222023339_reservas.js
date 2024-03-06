@@ -7,6 +7,11 @@ exports.up = knex => knex.schema.createTable("reservas", table => {
     table.text("mes_reserva");
     table.text("hora_reserva");
     table.text("ano_reserva");
+    table.text("status");
+    table.decimal("valor");
+
+
+
 
 
     table.timestamp("created_at").default(knex.fn.now());
