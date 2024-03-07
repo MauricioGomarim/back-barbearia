@@ -31,7 +31,7 @@ class ReservasController {
     const { whatsapp } = request;
 
     try {
-      whatsapp.sendMessage("5568992581641" + "@c.us", `Uma reserva acaba de ser realizada por Mauricio para o dia ${dia_reserva} de ${mes_reserva} no horario ${hora_reserva} hrs`);
+      whatsapp.sendMessage("6992503607" + "@c.us", `Uma reserva acaba de ser realizada por Mauricio para o dia ${dia_reserva} de ${mes_reserva} no horario ${hora_reserva} hrs`);
     } catch (error) {
       console.log('error: ', error);
     }
