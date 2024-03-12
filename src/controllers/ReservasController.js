@@ -144,6 +144,8 @@ class ReservasController {
     const reservas = await knex("reservas");
     return response.status(201).json(reservas);
   }
+
+
 }
 
 module.exports = ReservasController;
