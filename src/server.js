@@ -1,7 +1,10 @@
 
 require("express-async-errors");
 
-const express = require("express");
+const express = require("express")
+const http = require("http");
+const socketIO = require("socket.io");
+
 const cors = require("cors");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
@@ -11,13 +14,15 @@ const routes = require("./routes/index");
 class Server {
   constructor() {
     this.app = express();
+    this.server = http.createServer(this.app);
+    this.io = socketIO(this.server);
     this.client = new Client({
       authStrategy: new LocalAuth({
         dataPath: "./sessao-wpp/session",
       }),
     });
 
-    
+
     this.setupMiddlewares();
     this.initialize();
   
@@ -25,36 +30,17 @@ class Server {
   }
 
   initialize() {
+
     this.client.initialize();
 
-    let latestQRCode = null;
-    let isDeviceAuthenticated = false;
+    this.io.on('connection', socket => {
+      console.log('usuario connectado', socket.id)
+    })
 
     this.client.on("qr", (qr) => {
-      // Atualiza a última informação do QR code
       latestQRCode = qr;
+      console.log('gerado')
     });
-
-
-    this.app.get("/qrcode", (req, res) => {
-      if (latestQRCode && !isDeviceAuthenticated) {
-        qrcode.generate(latestQRCode, { small: true });
-        res.status(200).json({
-          qrCode: latestQRCode,
-        });
-      } 
-      if (isDeviceAuthenticated) {
-        res.json({
-          qrCode: "autenticado",
-        });
-      }
-      else {
-        res.json({
-          error: "Nenhum QR code disponível ou dispositivo já autenticado",
-        });
-      }
-    });
-
 
     this.client.on("disconnected", () => {
       console.log("Cliente desconectado!");
@@ -74,6 +60,27 @@ class Server {
         await this.client.sendMessage(message.from, "pong");
       }
     });
+
+    // let latestQRCode = null;
+    // let isDeviceAuthenticated = false;
+        // this.app.get("/qrcode", async (req, res) => {
+    //   if (latestQRCode && !isDeviceAuthenticated) {
+    //     qrcode.generate(latestQRCode, { small: true });
+    //     res.status(200).json({
+    //       qrCode: latestQRCode,
+    //     });
+    //   } 
+    //   if (isDeviceAuthenticated) {
+    //     res.json({
+    //       qrCode: "autenticado",
+    //     });
+    //   }
+    //   if(!latestQRCode) {
+    //     res.json({
+    //       qrCode: "gerando",
+    //     });
+    //   }
+    // });
   }
 
   setupMiddlewares() {
