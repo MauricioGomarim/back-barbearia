@@ -30,11 +30,11 @@ class ReservasController {
 
     const { whatsapp } = request;
 
-    // try {
-    //   whatsapp.sendMessage("5568992581641" + "@c.us", "mensagem teste");
-    // } catch (error) {
-    //   console.log('error: ', error);
-    // }
+    try {
+      whatsapp.sendMessage("5517992118342" + "@c.us", "mensagem teste");
+    } catch (error) {
+      console.log('error: ', error);
+    }
     
 
     await knex("reservas").insert({
