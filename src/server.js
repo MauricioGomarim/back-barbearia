@@ -15,7 +15,14 @@ class Server {
   constructor() {
     this.app = express();
     this.server = http.createServer(this.app);
-    this.io = socketIO(this.server);
+    this.io = socketIO(this.server, {
+      cors: {
+        origin: "http://localhost:5173", // Substitua pela origem do seu frontend
+        methods: ["GET", "POST"],
+        allowedHeaders: ["my-custom-header"],
+        credentials: true
+      }
+    });
     this.client = new Client({
       authStrategy: new LocalAuth({
         dataPath: "./sessao-wpp/session",
@@ -31,10 +38,16 @@ class Server {
 
   initialize() {
 
+    
+    let latestQRCode = null;
+    let isDeviceAuthenticated = false;
+
     this.client.initialize();
 
     this.io.on('connection', socket => {
       console.log('usuario connectado', socket.id)
+
+      socket.emit("qr_code", { qrCode: latestQRCode });
     })
 
     this.client.on("qr", (qr) => {
@@ -61,30 +74,31 @@ class Server {
       }
     });
 
-    // let latestQRCode = null;
-    // let isDeviceAuthenticated = false;
-        // this.app.get("/qrcode", async (req, res) => {
-    //   if (latestQRCode && !isDeviceAuthenticated) {
-    //     qrcode.generate(latestQRCode, { small: true });
-    //     res.status(200).json({
-    //       qrCode: latestQRCode,
-    //     });
-    //   } 
-    //   if (isDeviceAuthenticated) {
-    //     res.json({
-    //       qrCode: "autenticado",
-    //     });
-    //   }
-    //   if(!latestQRCode) {
-    //     res.json({
-    //       qrCode: "gerando",
-    //     });
-    //   }
-    // });
+
+      this.app.get("/qrcode", async (req, res) => {
+      if (latestQRCode && !isDeviceAuthenticated) {
+        qrcode.generate(latestQRCode, { small: true });
+        res.status(200).json({
+          qrCode: latestQRCode,
+        });
+      } 
+      if (isDeviceAuthenticated) {
+        res.json({
+          qrCode: "autenticado",
+        });
+      }
+      if(!latestQRCode) {
+        res.json({
+          qrCode: "gerando",
+        });
+      }
+    });
   }
 
   setupMiddlewares() {
-    this.app.use(cors());
+    this.app.use(cors({
+      origin: '*'
+    }));
     this.app.use(express.json());
     this.app.use((req, res, next) => {
       req.whatsapp = this.client;
@@ -116,7 +130,7 @@ class Server {
   
 
   start(port) {
-    this.app.listen(port, () => {
+    this.server.listen(port, () => {
       console.log(`Server is running on Port ${port}`);
     });
   }
