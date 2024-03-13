@@ -44,30 +44,35 @@ class Server {
 
     this.client.initialize();
 
+    this.io.emit("qr_code", { qrCode: latestQRCode });
+
     this.io.on('connection', socket => {
-      socket.emit("qr_code", { qrCode: latestQRCode });
+      console.log('usuário conectado', socket.id);
     })
 
     this.client.on("qr", (qr) => {
-      latestQRCode = qr;
-      console.log('gerado')
-      if(!isDeviceAuthenticated) {
+      if(isDeviceAuthenticated == false) {
+        latestQRCode = qr;
         this.io.emit("qr_code", { qrCode: qr });
       } else {
-        this.io.emit("qr_code", { qrCode: 'autenticado' });
+        latestQRCode = 'autenticado';
       }
+
+     
       
     });
 
     this.client.on("disconnected", () => {
       console.log("Cliente desconectado!");
       isDeviceAuthenticated = false;
+      this.io.emit("qr_code", { qrCode: '' });
     });
     
 
     this.client.on("authenticated", (session) => {
       console.log("Autenticado com sucesso!");
       isDeviceAuthenticated = true;
+      this.io.emit("qr_code", { qrCode: 'autenticado' });
     });
     this.client.on("ready", () => {
       console.log("Client is ready!");
