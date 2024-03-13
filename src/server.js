@@ -75,24 +75,24 @@ class Server {
     });
 
 
-      this.app.get("/qrcode", async (req, res) => {
-      if (latestQRCode && !isDeviceAuthenticated) {
-        qrcode.generate(latestQRCode, { small: true });
-        res.status(200).json({
-          qrCode: latestQRCode,
-        });
-      } 
-      if (isDeviceAuthenticated) {
-        res.json({
-          qrCode: "autenticado",
-        });
-      }
-      if(!latestQRCode) {
-        res.json({
-          qrCode: "gerando",
-        });
-      }
-    });
+    //   this.app.get("/qrcode", async (req, res) => {
+    //   if (latestQRCode && !isDeviceAuthenticated) {
+    //     qrcode.generate(latestQRCode, { small: true });
+    //     res.status(200).json({
+    //       qrCode: latestQRCode,
+    //     });
+    //   } 
+    //   if (isDeviceAuthenticated) {
+    //     res.json({
+    //       qrCode: "autenticado",
+    //     });
+    //   }
+    //   if(!latestQRCode) {
+    //     res.json({
+    //       qrCode: "gerando",
+    //     });
+    //   }
+    // });
   }
 
   setupMiddlewares() {
