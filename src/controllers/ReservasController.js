@@ -14,8 +14,26 @@ class ReservasController {
       mes_reserva,
       hora_reserva,
       ano_reserva,
+      diaDaSemana,
       valor
     } = request.body;
+
+    const meses = {
+      janeiro: 0,
+      fevereiro: 1,
+      março: 2,
+      abril: 3,
+      maio: 4,
+      junho: 5,
+      julho: 6,
+      agosto: 7,
+      setembro: 8,
+      outubro: 9,
+      novembro: 10,
+      dezembro: 11
+    };
+
+    const user = await knex("users").where({id: user_id}).first();
 
     const reserva = await knex("reservas")
       .where({ dia_reserva })
@@ -29,9 +47,19 @@ class ReservasController {
     const id_services_json = JSON.stringify(id_services);
 
     const { whatsapp } = request;
+    const numeroMes = meses[mes_reserva.toLowerCase()];
+
+
+    const numeroLimpo = user.telefone.replace(/[-()\s]/g, "");
+    console.log(numeroLimpo)
 
     try {
-      whatsapp.sendMessage("6992503607" + "@c.us", `Uma reserva acaba de ser realizada por Mauricio para o dia ${dia_reserva} de ${mes_reserva} no horario ${hora_reserva} hrs`);
+      whatsapp.sendMessage(`55${numeroLimpo}` + "@c.us", `Olá ${user.name}, tudo bem? Seu agendamento para o dia  ${dia_reserva}/${numeroMes}/${ano_reserva} ${diaDaSemana} às ${hora_reserva}hrs está confirmado!
+
+Caso desistência sem antecedência será cobrado a taxa de 50% do serviço agendado! 
+
+Barbearia agradece a preferência ✂️🔥
+📍R. Lorem ipsum`);
     } catch (error) {
       console.log('error: ', error);
     }

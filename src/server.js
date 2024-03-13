@@ -58,8 +58,6 @@ class Server {
         latestQRCode = 'autenticado';
       }
 
-     
-      
     });
 
     this.client.on("disconnected", () => {
