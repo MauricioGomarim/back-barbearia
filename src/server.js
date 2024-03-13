@@ -17,19 +17,54 @@ class Server {
       }),
     });
 
-    this.initialize();
+    
     this.setupMiddlewares();
+    this.initialize();
+  
     this.setupRoutes();
   }
 
   initialize() {
     this.client.initialize();
+
+    let latestQRCode = null;
+    let isDeviceAuthenticated = false;
+
     this.client.on("qr", (qr) => {
-      qrcode.generate(qr, { small: true });
+      // Atualiza a última informação do QR code
+      latestQRCode = qr;
     });
+
+
+    this.app.get("/qrcode", (req, res) => {
+      if (latestQRCode && !isDeviceAuthenticated) {
+        qrcode.generate(latestQRCode, { small: true });
+        res.status(200).json({
+          qrCode: latestQRCode,
+        });
+      } 
+      if (isDeviceAuthenticated) {
+        res.json({
+          qrCode: "autenticado",
+        });
+      }
+      else {
+        res.json({
+          error: "Nenhum QR code disponível ou dispositivo já autenticado",
+        });
+      }
+    });
+
+
+    this.client.on("disconnected", () => {
+      console.log("Cliente desconectado!");
+      isDeviceAuthenticated = false;
+    });
+    
 
     this.client.on("authenticated", (session) => {
       console.log("Autenticado com sucesso!");
+      isDeviceAuthenticated = true;
     });
     this.client.on("ready", () => {
       console.log("Client is ready!");
@@ -48,6 +83,8 @@ class Server {
       req.whatsapp = this.client;
       next();
     });
+
+    
   }
 
   setupRoutes() {
@@ -65,13 +102,19 @@ class Server {
         message: "Internal Server Error",
       });
     });
+   
+
   }
+
+  
 
   start(port) {
     this.app.listen(port, () => {
       console.log(`Server is running on Port ${port}`);
     });
   }
+
+
 
 }
 
