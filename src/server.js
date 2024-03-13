@@ -45,15 +45,18 @@ class Server {
     this.client.initialize();
 
     this.io.on('connection', socket => {
-      console.log('usuario connectado', socket.id)
-
       socket.emit("qr_code", { qrCode: latestQRCode });
     })
 
     this.client.on("qr", (qr) => {
       latestQRCode = qr;
       console.log('gerado')
-      this.io.emit("qr_code", { qrCode: qr });
+      if(!isDeviceAuthenticated) {
+        this.io.emit("qr_code", { qrCode: qr });
+      } else {
+        this.io.emit("qr_code", { qrCode: 'autenticado' });
+      }
+      
     });
 
     this.client.on("disconnected", () => {
