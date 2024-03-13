@@ -53,6 +53,7 @@ class Server {
     this.client.on("qr", (qr) => {
       latestQRCode = qr;
       console.log('gerado')
+      this.io.emit("qr_code", { qrCode: qr });
     });
 
     this.client.on("disconnected", () => {
