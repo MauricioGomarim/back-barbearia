@@ -1,13 +1,13 @@
 
 require("express-async-errors");
-
+const qrcode = require('qrcode-terminal');
 const express = require("express")
 const http = require("http");
 const socketIO = require("socket.io");
 
 const cors = require("cors");
 const { Client, LocalAuth } = require("whatsapp-web.js");
-const qrcode = require("qrcode-terminal");
+const QRCode = require('qrcode');
 const AppError = require("./utils/AppError");
 const routes = require("./routes/index");
 
@@ -17,7 +17,7 @@ class Server {
     this.server = http.createServer(this.app);
     this.io = socketIO(this.server, {
       cors: {
-        origin: "http://127.0.0.1:5173", // Substitua pela origem do seu frontend
+        origin: "http://localhost:5173", // Substitua pela origem do seu frontend
         methods: ["GET", "POST"],
         allowedHeaders: ["my-custom-header"],
         credentials: true
@@ -26,7 +26,8 @@ class Server {
     this.client = new Client({
       authStrategy: new LocalAuth({
         dataPath: "./sessao-wpp/session",
-      }),
+      })
+
     });
 
 
@@ -43,50 +44,45 @@ class Server {
     let isDeviceAuthenticated = false;
 
     this.client.initialize();
-
+    
     this.io.emit("qr_code", { qrCode: latestQRCode });
 
-    this.io.on('connection', (socket, qr) => {
+    this.io.on('connection', (socket) => {
       console.log('usuário conectado', socket.id);
-      this.io.emit("qr_code", { qrCode: latestQRCode }); 
+      if(isDeviceAuthenticated == true) {
+        this.io.emit("qr_code", { qrCode: 'autenticado' }); 
+      } else {
+        this.io.emit("qr_code", { qrCode: latestQRCode }); 
+      }
+
     })
 
     this.client.on("qr", (qr) => {
-      if(isDeviceAuthenticated == false) {
-        latestQRCode = qr;
-        this.io.emit("qr_code", { qrCode: qr });
-      } else {
-        latestQRCode = 'autenticado';
-      }
+      latestQRCode = qr;
+      console.log('gerou')
+      this.io.emit("qr_code", { qrCode: qr });
     });
+
 
     this.client.on("disconnected", () => {
       console.log("Cliente desconectado!");
       isDeviceAuthenticated = false;
-      this.io.emit("qr_code", { qrCode: '' });
-      
-      this.client.on("qr", (qr) => {
-        console.log('desconectou e gerou')
-        latestQRCode = qr;
-      });
+
+      this.io.emit("qr_code", { qrCode: null });
+      this.client.initialize();
     });
 
-    
-    
 
     this.client.on("authenticated", (session) => {
       console.log("Autenticado com sucesso!");
-      isDeviceAuthenticated = true;
-      this.io.emit("qr_code", { qrCode: 'autenticado' });
+  
     });
     this.client.on("ready", () => {
       console.log("Client is ready!");
+      isDeviceAuthenticated = true;
+      this.io.emit("qr_code", { qrCode: 'autenticado' });
     });
-    this.client.on("message", async (message) => {
-      if (message.body === "!ping") {
-        await this.client.sendMessage(message.from, "pong");
-      }
-    });
+
 
 
     //   this.app.get("/qrcode", async (req, res) => {
