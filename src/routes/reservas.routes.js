@@ -11,7 +11,10 @@ const reservasRoutes = Router();
 
 reservasRoutes.post('/', ensureAuthenticated , reservasController.create);
 reservasRoutes.get('/search', ensureAuthenticated , reservasController.showFilter);
-reservasRoutes.get('/reservas/:id', ensureAuthenticated , reservasController.show);
+reservasRoutes.get('/reservas', ensureAuthenticated , reservasController.index);
+reservasRoutes.get('/reservas/:user_id', ensureAuthenticated , reservasController.show);
+reservasRoutes.put('/reservas/:id', ensureAuthenticated , reservasController.update);
+
 
 
 

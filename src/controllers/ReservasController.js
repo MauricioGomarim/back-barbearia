@@ -34,6 +34,7 @@ class ReservasController {
     };
 
     const user = await knex("users").where({id: user_id}).first();
+    const barbeiro = await knex("users").where({id: id_barbeiro_select}).first();
 
     const reserva = await knex("reservas")
       .where({ dia_reserva })
@@ -49,30 +50,28 @@ class ReservasController {
     const { whatsapp } = request;
     const numeroMes = meses[mes_reserva.toLowerCase()];
 
+    const numeroLimpo = barbeiro.telefone.replace(/[-()\s]/g, "");
 
-    const numeroLimpo = user.telefone.replace(/[-()\s]/g, "");
-    console.log(numeroLimpo)
+//     try {
+//       whatsapp.sendMessage(`55${numeroLimpo}` + "@c.us", `Olá ${barbeiro.name}, tudo bem? Uma reserva para o dia  ${dia_reserva}/${numeroMes}/${ano_reserva} ${diaDaSemana} às ${hora_reserva}hrs foi solicitada!
+// Nome do cliente: ${user.name}
+// Telefone: ${user.telefone}
+// Acesse o link para confirmar ou reprovar a reserva!
 
-    try {
-      whatsapp.sendMessage("5517992118342" + "@c.us", "mensagem teste");
-      whatsapp.sendMessage(`55${numeroLimpo}` + "@c.us", `Olá ${user.name}, tudo bem? Seu agendamento para o dia  ${dia_reserva}/${numeroMes}/${ano_reserva} ${diaDaSemana} às ${hora_reserva}hrs está confirmado!
+// http://localhost:5173/solicitacoes-painel 🙅🏻`);
 
-Caso desistência sem antecedência será cobrado a taxa de 50% do serviço agendado! 
-
-Barbearia agradece a preferência ✂️🔥
-📍R. Lorem ipsum`);
-
-    } catch (error) {
-      console.log('error: ', error);
-    }
+//     } catch (error) {
+//       console.log('error: ', error);
+//     }
     
 
     await knex("reservas").insert({
-      user_id,
-      id_barbeiro_select,
+      user_id: user.id,
+      id_barbeiro_select: barbeiro.id,
+      telefone: user.telefone,
       id_services: id_services_json,
       dia_reserva,
-      mes_reserva,
+      mes_reserva: numeroMes,
       hora_reserva,
       ano_reserva,
       status: 'Pendente',
@@ -84,75 +83,18 @@ Barbearia agradece a preferência ✂️🔥
   }
 
   async update(request, response) {
-    const {
-      name,
-      telefone,
-      email,
-      password,
-      old_password,
-      insta,
-      face,
-      descricao,
-    } = request.body;
-
-    const user_id = request.user.id;
-
-    const user = await knex("users").where({ id: user_id }).first();
-
-    if (!user) {
-      throw new AppError("Usuário não encontrado");
-    }
-
-    const userWithUpdatedEmail = await knex("users").where({ email }).first();
-
-    if (userWithUpdatedEmail && userWithUpdatedEmail.id !== user.id) {
-      throw new AppError("Este e-mail já está em uso.");
-    }
-
-    if (!email.includes("@", ".") || !email.includes(".")) {
-      throw new AppError("Erro: Digite um email válido!");
-    }
-
-    user.name = name;
-    user.telefone = telefone;
-    user.email = email;
-    user.insta = insta;
-    user.face = face;
-    user.descricao = descricao;
-
-    if (password && !old_password) {
-      throw new AppError(
-        "Você precisa informar a senha antiga para definir a nova senha"
-      );
-    }
-
-    if (password && old_password) {
-      const checkOldPassword = await compare(old_password, user.password);
-
-      if (!checkOldPassword) {
-        throw new AppError("A senha antiga não confere.");
-      }
-
-      user.password = await hash(password, 8);
-    }
+    const { status } = request.body;
+    const reserva_id = request.params.id;
 
     // Inserindo dados no banco
-    await knex("users").where({ id: user_id }).update({
-      name: user.name,
-      email: user.email,
-      telefone: user.telefone,
-      password: user.password,
-      insta: user.insta,
-      face: user.face,
-      descricao: user.descricao,
-    });
+    await knex("reservas").where({ id: reserva_id }).update({status});
 
     return response.status(201).json();
   }
 
   async show(request, response) {
     // Pegando o id
-    const user_id = request.user.id;
+    const { user_id } = request.params;
 
     const reservas = await knex("reservas").where({ user_id });
     return response.status(201).json(reservas);
@@ -171,7 +113,20 @@ Barbearia agradece a preferência ✂️🔥
   }
 
   async index(request, response) {
-    const reservas = await knex("reservas");
+    const {status} = request.query;
+ 
+    let reservas;
+    if (status) {
+      reservas = await knex("reservas")
+          .where({ status })
+          .innerJoin("users", "reservas.user_id", "users.id")
+          .select("reservas.*", "users.name as user_name");
+  } else {
+      reservas = await knex("reservas")
+          .innerJoin("users", "reservas.user_id", "users.id")
+          .select("reservas.*", "users.name as user_name");
+  }
+
     return response.status(201).json(reservas);
   }
 

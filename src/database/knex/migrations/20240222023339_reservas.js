@@ -1,7 +1,8 @@
 exports.up = knex => knex.schema.createTable("reservas", table => {
     table.increments("id");
-    table.integer("user_id").references("id").inTable("users");
-    table.integer("id_barbeiro_select").references("id").inTable("users");
+    table.integer("user_id");
+    table.integer("id_barbeiro_select")
+    table.text("telefone")
     table.text("id_services");
     table.text("dia_reserva");
     table.text("mes_reserva");

@@ -31,7 +31,7 @@ class UsersController {
 
   async update(request, response) {
     const { name, telefone, email,  password, old_password, insta, face, descricao } = request.body;
-  
+    console.log(telefone)
     const user_id = request.user.id;
     
     

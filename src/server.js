@@ -33,7 +33,6 @@ class Server {
 
     this.setupMiddlewares();
     this.initialize();
-  
     this.setupRoutes();
   }
 
@@ -59,7 +58,6 @@ class Server {
 
     this.client.on("qr", (qr) => {
       latestQRCode = qr;
-      console.log('gerou')
       this.io.emit("qr_code", { qrCode: qr });
     });
 
