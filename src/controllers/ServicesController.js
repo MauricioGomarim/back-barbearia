@@ -49,17 +49,22 @@ class ServicesController {
   async index(request, response) {
     const { title, id } = request.query;
     let services;
-
-    if (title) {
-      services = await knex("servicos")
-        .whereRaw("LOWER(title) LIKE ?", [`%${title.toLowerCase()}%`])
-        .orderBy("id");
-    } else if (title == "" || title == undefined) {
+ 
+    if (id) {
+      // Se id estiver definido, filtrar por barbeiro_id
+      if (title) {
+        services = await knex("servicos")
+          .where("barbeiro_id", id)
+          .whereRaw("LOWER(title) LIKE ?", [`%${title.toLowerCase()}%`])
+          .orderBy("id");
+      } else {
+        services = await knex("servicos")
+          .where("barbeiro_id", id)
+          .orderBy("created_at", "desc");
+      }
+    } else {
+      // Se id não estiver definido, retornar todos os serviços
       services = await knex("servicos").orderBy("created_at", "desc");
-    }
-
-    if(id) {
-      services = await knex("servicos").where("barbeiro_id", id).orderBy("created_at", "desc");
     }
 
     return response.status(201).json(services);

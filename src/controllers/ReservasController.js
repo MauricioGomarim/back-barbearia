@@ -113,12 +113,13 @@ class ReservasController {
   }
 
   async index(request, response) {
-    const {status} = request.query;
- 
+    const {status, id} = request.query;
+    
     let reservas;
+
     if (status) {
       reservas = await knex("reservas")
-          .where({ status })
+          .where({ status }).where("id_barbeiro_select", id)
           .innerJoin("users", "reservas.user_id", "users.id")
           .select("reservas.*", "users.name as user_name");
   } else {
